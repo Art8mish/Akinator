@@ -1,0 +1,14 @@
+
+{ "is animal" 
+	{ "likes banana" 
+		{ "gorilla" }
+
+		{ "poltorashka" }
+	}
+
+	{ "is human" 
+		{ "mudak" }
+
+		{ "pidaras" }
+	}
+}

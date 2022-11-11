@@ -1,0 +1,17 @@
+digraph tree{
+	rankdir=TB;
+spline = ortho;
+	16655568[style="filled",fillcolor="peachpuff"shape=record,color=red3,label="{<f0> 16655568|is animal|{<f2>left_yes 16655728 | <f1>rght_no 16655680}}"]
+	16655568:<f2>:s->16655728:n[weight = 1, constraint=true, style="dashed", label="yes"]
+	16655568:<f1>:s->16655680:n[weight = 1, constraint=true, style="dashed", label="no"]
+	16655680[style="filled",fillcolor="peachpuff"shape=record,color=red3,label="{<f0> 16655680|is human|{<f2>left_yes 16655776 | <f1>rght_no 16655800}}"]
+	16655680:<f2>:s->16655776:n[weight = 1, constraint=true, style="dashed", label="yes"]
+	16655680:<f1>:s->16655800:n[weight = 1, constraint=true, style="dashed", label="no"]
+	16655800[style="filled",fillcolor="peachpuff"shape=record,color=red3,label="{<f0> 16655800|pidaras|{<f2>left_yes 0 | <f1>rght_no 0}}"]
+	16655776[style="filled",fillcolor="peachpuff"shape=record,color=red3,label="{<f0> 16655776|mudak|{<f2>left_yes 0 | <f1>rght_no 0}}"]
+	16655728[style="filled",fillcolor="peachpuff"shape=record,color=red3,label="{<f0> 16655728|likes banana|{<f2>left_yes 16673040 | <f1>rght_no 16672896}}"]
+	16655728:<f2>:s->16673040:n[weight = 1, constraint=true, style="dashed", label="yes"]
+	16655728:<f1>:s->16672896:n[weight = 1, constraint=true, style="dashed", label="no"]
+	16672896[style="filled",fillcolor="peachpuff"shape=record,color=red3,label="{<f0> 16672896|poltorashka|{<f2>left_yes 0 | <f1>rght_no 0}}"]
+	16673040[style="filled",fillcolor="peachpuff"shape=record,color=red3,label="{<f0> 16673040|gorilla|{<f2>left_yes 0 | <f1>rght_no 0}}"]
+}
