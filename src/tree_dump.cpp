@@ -82,14 +82,14 @@ int CreateTreeNodes(const struct TreeNode *curr_node, FILE *graph_f)
     const char *fill_color = "peachpuff";
 
     fprintf(graph_f, "\t%d[style=\"filled\",fillcolor=\"%s\"shape=record,color=%s,"
-                        "label=\"{<f0> %d|" TREE_SPECIFIER "|{<f2>left_yes %d | <f1>rght_no %d}}\"]\n",
-                        (int)curr_node, fill_color, color, (int)curr_node, curr_node->value, (int)curr_node->left_yes, (int)curr_node->rght_no);
+                        "label=\"{{<f0> 0x%d |<f3>prev 0x%d}|" TREE_SPECIFIER "|{<f2>left_yes 0x%d | <f1>rght_no 0x%d}}\"]\n",
+                        (int)curr_node, fill_color, color, (int)curr_node, (int)curr_node->prev, curr_node->value, (int)curr_node->left_yes, (int)curr_node->rght_no);
 
     if (curr_node->left_yes != NULL)
-        fprintf(graph_f, "\t%d:<f2>:s->%d:n[weight = 1, constraint=true, style=\"dashed\", label=\"yes\"]\n", (int)curr_node, (int)curr_node->left_yes);
+        fprintf(graph_f, "\t%d:<f2>:s->%d:<f0>:n[weight = 1, constraint=true, style=\"dashed\", label=\"yes\"]\n", (int)curr_node, (int)curr_node->left_yes);
 
-    if (curr_node->rght_no != NULL)
-        fprintf(graph_f, "\t%d:<f1>:s->%d:n[weight = 1, constraint=true, style=\"dashed\", label=\"no\"]\n", (int)curr_node, (int)curr_node->rght_no);
+    if (curr_node->rght_no  != NULL)
+        fprintf(graph_f, "\t%d:<f1>:s->%d:<f0>:n[weight = 1, constraint=true, style=\"dashed\", label=\"no\"]\n", (int)curr_node, (int)curr_node->rght_no);
 
     if (curr_node->rght_no != NULL)
     {

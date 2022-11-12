@@ -1,13 +1,21 @@
 
-{ "is animal" 
+{ "animal" 
 	{ "likes banana" 
-		{ "gorilla" }
+		{ "king of monkeys" 
+			{ "orangutan" }
+
+			{ "gorilla" }
+		}
 
 		{ "poltorashka" }
 	}
 
-	{ "is human" 
-		{ "mudak" }
+	{ "human" 
+		{ "smokes" 
+			{ "narkoman" }
+
+			{ "sportsman" }
+		}
 
 		{ "pidaras" }
 	}

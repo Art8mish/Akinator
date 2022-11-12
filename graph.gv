@@ -1,0 +1,11 @@
+digraph list{
+	rankdir=LR;
+spline = ortho;
+	14117464[shape=record, style="filled", fillcolor="darkolivegreen2", color=seagreen,label="<f0>14117464|data 0     |{<f2>prev 14117464 | <f1>next 14117464}"]
+	14117464 -> 14117464 [style="invis", weight=1000,constraint=true]
+	14117464:<f1>:s->14117464:<f2>:s[dir=both,weight = 1, constraint=true,style="dashed"]
+
+HEAD[style="filled",fillcolor="skyblue",label="HEAD = 14117464"]	HEAD->14117464:<f0>{rank = same; 14117464; HEAD;}
+
+TAIL[style="filled",fillcolor="skyblue",label="TAIL = 14117464"]	TAIL->14117464:<f0>{rank = same; 14117464; TAIL;}; 
+}

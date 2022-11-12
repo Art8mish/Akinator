@@ -50,10 +50,10 @@
 #define LISTDUMP(list, comment)                                      \
             listDump(list, comment, __FILE__, __LINE__, __FUNCTION__)
 
-typedef int list_elem_t;
+typedef struct TreeNode * list_elem_t;
 #define LIST_SPECIFIER "%-6d"
 
-const int LIST_POISON_VALUE = -505;
+static struct TreeNode *LIST_POISON_VALUE = NULL;
 
 static const char * const GRAPH_FILE = "graph.gv";
 static const char * const  DUMP_FILE = "io/dump_file.txt";
