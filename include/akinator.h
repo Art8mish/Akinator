@@ -155,7 +155,7 @@ enum Mode
     MODE_EXIT      = 6,
 };
 
-int StartAkinator(void);
+int StartAkinator(struct Tree *tree);
 
 struct Tree *treeCtor(void);
 int treeDtor(struct Tree *tree);

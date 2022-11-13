@@ -19,7 +19,6 @@
                     }                                                            \
                 if (!correct_input)                                              \
                 {                                                                \
-                    system("cls");                                               \
                     printf("I do not understand.\nEnter correct value..\n");     \
                 }                                                                \
             }                                                                    \
@@ -113,8 +112,8 @@ int MakeGuess(struct Tree *tree, struct TreeNode *curr_node)
 
     else if (strcmp(answer, "no") == 0)
     {
-        printf("You won! I don't know what it is.\n");
-        printf("Do you want to give definition?\n");
+        printf("You won! I don't know what it is.\n\n");
+        printf("Do you want to give definition? (yes/no)\n");
         CHECK_INSERT(scanf(" %3s", answer), strcmp(answer, "yes") == 0 || 
                                             strcmp(answer, "no")  == 0);
         if (strcmp(answer, "yes") == 0)
@@ -150,8 +149,7 @@ int AddNewConcept(struct Tree *tree, struct TreeNode *curr_node)
 
     WRITE_TREE_NODE_VALUE(curr_node, difference);
 
-    int save_node_err = treeSave(tree);
-    ERROR_CHECK(save_node_err, ERROR_TREE_SAVE);
+    TREEDUMP(tree, "Adding dump");
 
     return SUCCESS;
 }
@@ -265,11 +263,8 @@ int FullRetList(struct TreeNode *curr_node, struct List *ret_list)
 }
 
 
-int StartAkinator(void)
+int StartAkinator(struct Tree *tree)
 {
-    struct Tree *tree = ReadTree(TREE_IO);
-    ERROR_CHECK(tree == NULL, ERROR_READ_TREE);
-
     TREEDUMP(tree, "START");
 
     int mode = 0;
@@ -310,7 +305,7 @@ int StartAkinator(void)
                 break;
     }
 
-    int akinator_err = StartAkinator();
+    int akinator_err = StartAkinator(tree);
     ERROR_CHECK(akinator_err, ERROR_AKINATOR);
 
     return SUCCESS;
