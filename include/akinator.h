@@ -27,7 +27,7 @@ const size_t MAX_CMD_SIZE = 4;
 
 #include "error.h"
 
-enum Mode
+enum AkinatorMode
 {
     MODE_GUESS      = 1,
     MODE_DEFINE     = 2,
@@ -39,11 +39,10 @@ enum Mode
 
 struct Akinator
 {
-    struct Tree *tree     = NULL;
-    struct List *list_ret = NULL;
+    struct Tree *tree = NULL;
 };
 
-int StartAkinator(struct Akinator *akn);
+int RunAkinator(struct Akinator *akn);
 
 struct Akinator *AkinatorCtor(void);
 int AkinatorDtor(struct Akinator *akn);
@@ -57,9 +56,16 @@ int MakeGuess(struct Akinator *akn, struct TreeNode *curr_node);
 int AddNewConcept(struct Akinator *akn, struct TreeNode *curr_node);
 
 int MakeDefinition(struct Akinator *akn);
-int DoDefinitionIter(struct Akinator *akn, struct TreeNode *curr_node,
-                     struct TreeNode **desired_node, tree_elem_t concept);
-int PrintDefinition(struct Akinator *akn, struct TreeNode *desire_node);
-int FillRetList(struct Akinator *akn, struct TreeNode *curr_node);
+int FindDesiredNode(struct Akinator *akn, struct TreeNode *curr_node,
+                    struct TreeNode **desired_node, tree_elem_t concept);
+int PrintDefinition(struct TreeNode *desired_node);
+int FillRetList(struct List *list_ret, struct TreeNode *curr_node);
+
+int CompareConcepts(struct Akinator *akn);
+int PrintComparison(struct Akinator *akn, struct TreeNode *frst_cncpt_node,
+                                          struct TreeNode *scnd_cncpt_node);
+int PrintListRet(struct List *list_ret, struct TreeNode *desired_node);
+
+
 
 #endif //AKINATOR_H_INCLUDED

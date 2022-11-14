@@ -55,9 +55,9 @@ typedef struct TreeNode * list_elem_t;
 
 static struct TreeNode *LIST_POISON_VALUE = NULL;
 
-static const char * const GRAPH_FILE = "graph.gv";
-static const char * const  DUMP_FILE = "io/dump_file.txt";
-static const char * const   HTM_FILE = "io/allgraphs.htm"; 
+static const char *const GRAPH_FILE = "list_funcs/graph.gv";
+static const char *const  DUMP_FILE = "list_funcs/io/dump_file.txt";
+static const char *const   HTM_FILE = "list_funcs/io/allgraphs.htm"; 
 
 enum ListError
 {

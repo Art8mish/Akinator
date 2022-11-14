@@ -12,7 +12,7 @@ int TreeDump(const struct Tree *tree, const char *comment, bool debug,
 {
     ERROR_CHECK(tree == NULL, ERROR_NULL_PTR);
 
-    FILE *dump_f = fopen(TREE_HTM_FILE, "a");
+    FILE *dump_f = fopen(TREE_HTM_PATH, "a");
     ERROR_CHECK(dump_f == NULL, ERROR_OPENING_FILE);
 
     if (debug)
@@ -21,7 +21,7 @@ int TreeDump(const struct Tree *tree, const char *comment, bool debug,
             fprintf(dump_f, "<b><h2>%s</h2></b>\n", comment);
 
         if (file_name != NULL)
-            fprintf(dump_f, "\nTree DUMP at %s ", file_name, line_num, func_name);
+            fprintf(dump_f, "\nTree DUMP at %s ", file_name);
         
         if (line_num != 0)
             fprintf(dump_f, "(line: %d) ", line_num);
@@ -57,7 +57,7 @@ int CreateTreeGraph(const struct Tree *tree)
 {
     ERROR_CHECK(tree == NULL, ERROR_NULL_PTR);
 
-    FILE *graph_f = fopen(TREE_GRAPH_FILE, "w");
+    FILE *graph_f = fopen(TREE_GRAPH_PATH, "w");
     ERROR_CHECK(graph_f == NULL, ERROR_OPENING_FILE);
 
     fprintf(graph_f, "digraph tree{\n\trankdir=TB;\nspline = ortho;\n");
@@ -135,7 +135,7 @@ int SaveTreeGraphPng(void)
 
 int AddTreeGraphPng(int graph_counter)
 {
-    FILE *htm_f = fopen(TREE_HTM_FILE, "a");
+    FILE *htm_f = fopen(TREE_HTM_PATH, "a");
     ERROR_CHECK(htm_f == NULL, ERROR_OPENING_FILE);
     
     fprintf(htm_f, "<img width=400 src=\"../images/tree_graph%d.png\"><br>\n", graph_counter);

@@ -24,7 +24,9 @@ enum Error
     ERROR_FULL_RET_LIST         = 27,
     ERROR_AKINATOR_CTOR         = 28,
     ERROR_AKINATOR_DTOR         = 29,
-    
+    ERROR_PRINT_COMPARISON      = 30,
+    ERROR_PRINT_LIST_RET        = 31,
+    ERROR_COMPARE_CONCEPTS      = 32,
 };
 
 #endif //ERROR_H_INCLUDED

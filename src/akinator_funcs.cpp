@@ -18,20 +18,35 @@
                         break;                                                   \
                     }                                                            \
                 if (!correct_input)                                              \
-                {                                                                \
                     printf("I do not understand.\nEnter correct value..\n");     \
-                }                                                                \
             }                                                                    \
         } while(false)
+
+#define CTOR_LIST_RET(list_ret, desired_node)                                             \
+            struct List *(list_ret) = (struct List *) calloc(1, sizeof(struct List));       \
+            do                                                                              \
+            {                                                                               \
+                int list_ctor_err = listCtor(list_ret);                                     \
+                ERROR_CHECK(list_ctor_err, ERROR_CTOR);                                     \
+                int full_ret_list_err = FillRetList((list_ret), (desired_node));            \
+                ERROR_CHECK(full_ret_list_err, ERROR_FULL_RET_LIST);                        \
+            } while (false)
+
+#define DTOR_LIST_RET(list_ret)                                     \
+            do                                                      \
+            {                                                       \
+                int list_dtor_err = listDtor(list_ret);             \
+                ERROR_CHECK(list_dtor_err, ERROR_DTOR);             \
+                free(list_ret);                                     \
+            } while (false)
+            
 
 struct Akinator *AkinatorCtor(void)
 {
     struct Akinator *akn = (struct Akinator *) calloc(1, sizeof(struct Akinator));
 
-    akn->tree = ReadTree(TREE_IO);
+    akn->tree = DeserializeTree(TREE_SERIALIZATION_PATH);
     ERROR_CHECK(akn->tree == NULL, NULL);
-
-    akn->list_ret = NULL;
 
     TREEDUMP(akn->tree, "ctor dump");
 
@@ -192,11 +207,10 @@ int MakeDefinition(struct Akinator *akn)
     char answer[MAX_STR_SIZE] = { 0 };
     printf("What do you want to define?\n");
 
-    CHECK_INSERT(scanf(" " READABLE_SYMB, answer), (strlen(answer) <= MAX_STR_SIZE));
-
+    CHECK_INSERT(scanf(" " READABLE_SYMB, answer), (strlen(answer) < MAX_STR_SIZE));
 
     struct TreeNode *desired_node = NULL;
-    int definition_iter_err = DoDefinitionIter(akn, akn->tree->root, &desired_node, answer);
+    int definition_iter_err = FindDesiredNode(akn, akn->tree->root, &desired_node, answer);
     ERROR_CHECK(definition_iter_err, ERROR_DEFINITION_ITER_ERROR);
 
     if (desired_node == NULL)
@@ -208,17 +222,18 @@ int MakeDefinition(struct Akinator *akn)
 
     printf(TREE_SPECIFIER ": ", desired_node->value);
 
-    int print_definition_err = PrintDefinition(akn, desired_node);
+    int print_definition_err = PrintDefinition(desired_node);
     ERROR_CHECK(print_definition_err, ERROR_PRINT_DEFINITION);
+    printf("\n\n");
 
     return SUCCESS;
 }
 
-int DoDefinitionIter(struct Akinator *akn, struct TreeNode *curr_node,
-                     struct TreeNode **desired_node, tree_elem_t concept)
+int FindDesiredNode(struct Akinator *akn, struct TreeNode *curr_node,
+                    struct TreeNode **desired_node, tree_elem_t concept)
 {
-    ERROR_CHECK(akn       == NULL, ERROR_NULL_PTR);
-    ERROR_CHECK(akn->tree == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(akn          == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(akn->tree    == NULL, ERROR_NULL_PTR);
     ERROR_CHECK(curr_node    == NULL, ERROR_NULL_PTR);
     ERROR_CHECK(desired_node == NULL, ERROR_NULL_PTR);
 
@@ -230,67 +245,46 @@ int DoDefinitionIter(struct Akinator *akn, struct TreeNode *curr_node,
 
     if (curr_node->left != NULL)
     {
-        int definition_iter_err = DoDefinitionIter(akn, curr_node->left, desired_node, concept);
+        int definition_iter_err = FindDesiredNode(akn, curr_node->left, desired_node, concept);
         ERROR_CHECK(definition_iter_err, ERROR_DEFINITION_ITER);
     }
 
     if (curr_node->right != NULL)
     {
-        int definition_iter_err = DoDefinitionIter(akn, curr_node->right, desired_node, concept);
+        int definition_iter_err = FindDesiredNode(akn, curr_node->right, desired_node, concept);
         ERROR_CHECK(definition_iter_err, ERROR_DEFINITION_ITER);
     }
     
     return SUCCESS;
 }
 
-int PrintDefinition(struct Akinator *akn, struct TreeNode *desire_node)
+int PrintDefinition(struct TreeNode *desired_node)
 {
-    ERROR_CHECK(desire_node == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(desired_node == NULL, ERROR_NULL_PTR);
 
-    akn->list_ret = (struct List *) calloc(1, sizeof(struct List));
-    int list_ctor_err = listCtor(akn->list_ret);
-    ERROR_CHECK(list_ctor_err, ERROR_CTOR);
+    CTOR_LIST_RET(list_ret, desired_node);
 
-    int full_ret_list_err = FillRetList(akn, desire_node);
-    ERROR_CHECK(full_ret_list_err, ERROR_FULL_RET_LIST);
+    int print_list_ret = PrintListRet(list_ret, desired_node);
+    ERROR_CHECK(print_list_ret, ERROR_PRINT_LIST_RET);
 
-    while (akn->list_ret->fict_node->prev->value != desire_node)
-    {
-        struct TreeNode *curr_node = desire_node;
-
-        int list_pop_err = listPopBack(akn->list_ret, &curr_node);
-        ERROR_CHECK(list_pop_err, ERROR_POP_BACK);
-
-        if (akn->list_ret->fict_node->prev->value == curr_node->right)
-                printf("not ");
-            
-        printf(TREE_SPECIFIER, curr_node->value);
-
-        if (akn->list_ret->fict_node->prev->value != desire_node)
-            printf(", ");
-    }
-    printf("\n\n");
-
-    int list_dtor_err = listDtor(akn->list_ret);
-    ERROR_CHECK(list_dtor_err, ERROR_DTOR);
-    akn->list_ret = NULL;
+    DTOR_LIST_RET(list_ret);
 
     return SUCCESS;
 }
 
-int FillRetList(struct Akinator *akn, struct TreeNode *curr_node)
+int FillRetList(struct List *list_ret, struct TreeNode *curr_node)
 {
-    ERROR_CHECK(akn       == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(list_ret  == NULL, ERROR_NULL_PTR);
     ERROR_CHECK(curr_node == NULL, ERROR_NULL_PTR);
 
     struct Node *list_node = NULL;
-    int list_push_err = listPushBack(akn->list_ret, curr_node, &list_node);
+    int list_push_err = listPushBack(list_ret, curr_node, &list_node);
     ERROR_CHECK(list_push_err, ERROR_LIST_INSERT_AFTER);
 
     if (curr_node->prev == NULL)
         return SUCCESS;
 
-    int print_definition_err = FillRetList(akn, curr_node->prev);
+    int print_definition_err = FillRetList(list_ret, curr_node->prev);
     ERROR_CHECK(print_definition_err, ERROR_PRINT_DEFINITION);
 
     return SUCCESS;
@@ -298,12 +292,136 @@ int FillRetList(struct Akinator *akn, struct TreeNode *curr_node)
 
 int CompareConcepts(struct Akinator *akn)
 {
-    ERROR_CHECK(akn == NULL, )
+    ERROR_CHECK(akn == NULL, ERROR_NULL_PTR);
+
+    char frst_cncpt[MAX_STR_SIZE] = { 0 };
+    char scnd_cncpt[MAX_STR_SIZE] = { 0 };
+    printf("What do you want to compare?\n");
+
+    printf("Insert first concept: ");
+    CHECK_INSERT(scanf(" " READABLE_SYMB, frst_cncpt), (strlen(frst_cncpt) < MAX_STR_SIZE));
+
+    printf("Insert second concept: ");
+    CHECK_INSERT(scanf(" " READABLE_SYMB, scnd_cncpt), (strlen(scnd_cncpt) < MAX_STR_SIZE));
+
+    struct TreeNode *frst_cncpt_node  = NULL;
+    int definition_iter_err = FindDesiredNode(akn, akn->tree->root, &frst_cncpt_node, frst_cncpt);
+    ERROR_CHECK(definition_iter_err, ERROR_DEFINITION_ITER_ERROR);
+
+    if (strcmp(frst_cncpt, scnd_cncpt) == 0)
+    {
+        printf("You write same concepts:\n");
+        printf(TREE_SPECIFIER ": ", frst_cncpt);
+
+        int print_definition_err = PrintDefinition(frst_cncpt_node);
+        ERROR_CHECK(print_definition_err, ERROR_PRINT_DEFINITION);
+        printf("\n\n");
+
+        return SUCCESS;
+    }
+
+    struct TreeNode *scnd_cncpt_node = NULL;
+        definition_iter_err = FindDesiredNode(akn, akn->tree->root, &scnd_cncpt_node, scnd_cncpt);
+    ERROR_CHECK(definition_iter_err, ERROR_DEFINITION_ITER_ERROR);
+
+    int print_comparison_err = PrintComparison(akn, frst_cncpt_node, scnd_cncpt_node);
+    ERROR_CHECK(print_comparison_err, ERROR_PRINT_COMPARISON);
+
+    return SUCCESS;
 }
 
-int StartAkinator(struct Akinator *akn)
+int PrintComparison(struct Akinator *akn, struct TreeNode *frst_node,
+                                          struct TreeNode *scnd_node)
 {
-    ERROR_CHECK(akn == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(akn       == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(akn->tree == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(frst_node == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(scnd_node == NULL, ERROR_NULL_PTR);
+  
+    CTOR_LIST_RET(frst_list_ret, frst_node);
+    CTOR_LIST_RET(scnd_list_ret, scnd_node);
+
+    struct TreeNode *curr_node = NULL;
+    do
+    {
+        int list_pop_err = listPopBack(frst_list_ret, &curr_node);
+        ERROR_CHECK(list_pop_err, ERROR_POP_BACK);
+
+            list_pop_err = listPopBack(scnd_list_ret, &curr_node);
+        ERROR_CHECK(list_pop_err, ERROR_POP_BACK);
+
+    } while(frst_list_ret->fict_node->prev->value == 
+            scnd_list_ret->fict_node->prev->value);
+
+    struct TreeNode *dividing_node = curr_node;
+    printf("%s\n", curr_node->value);
+    if (dividing_node != akn->tree->root)
+    {
+        printf("They both: ");
+        int print_def_err = PrintDefinition(dividing_node);
+        ERROR_CHECK(print_def_err, ERROR_PRINT_DEFINITION);
+        printf("but, ");
+    }
+
+    else
+        printf("They have nothing common\n");
+
+    
+    struct Node *list_node = NULL;
+    int list_push_err = listPushBack(frst_list_ret, dividing_node, &list_node);
+    ERROR_CHECK(list_push_err, ERROR_LIST_INSERT_AFTER);
+
+    list_push_err = listPushBack(scnd_list_ret, dividing_node, &list_node);
+    ERROR_CHECK(list_push_err, ERROR_LIST_INSERT_AFTER);
+    
+
+    printf("\n" TREE_SPECIFIER ": ", frst_node->value);
+    int print_list_ret_err = PrintListRet(frst_list_ret, frst_node);
+    ERROR_CHECK(print_list_ret_err, ERROR_PRINT_LIST_RET);
+
+    printf("\nand " TREE_SPECIFIER ": ", scnd_node->value);
+        print_list_ret_err = PrintListRet(scnd_list_ret, scnd_node);
+    ERROR_CHECK(print_list_ret_err, ERROR_PRINT_LIST_RET);
+    printf("\n\n");
+
+    DTOR_LIST_RET(frst_list_ret);
+    DTOR_LIST_RET(scnd_list_ret);
+
+    return SUCCESS;
+}
+
+int PrintListRet(struct List *list_ret, struct TreeNode *desired_node)
+{
+    ERROR_CHECK(list_ret     == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(desired_node == NULL, ERROR_NULL_PTR);
+
+    while (list_ret->fict_node->prev->value != desired_node)
+    {
+        int counter = 0;
+        struct TreeNode *curr_node = NULL;
+        int list_pop_err = listPopBack(list_ret, &curr_node);
+        ERROR_CHECK(list_pop_err, ERROR_POP_BACK);
+
+        if (list_ret->fict_node->prev->value == curr_node->right)
+                printf("not ");
+            
+        printf(TREE_SPECIFIER, curr_node->value);
+
+        if (list_ret->fict_node->prev->value != desired_node)
+            printf(", ");
+
+        counter++;
+        if (counter == 20)
+            return ERROR_AKINATOR;
+    } 
+
+    return SUCCESS;
+}
+
+int RunAkinator(struct Akinator *akn)
+{
+    ERROR_CHECK(akn       == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(akn->tree == NULL, ERROR_NULL_PTR);
 
     do
     {
@@ -329,7 +447,8 @@ int StartAkinator(struct Akinator *akn)
 
             case MODE_COMPARISON :
                     {
-                        
+                        int compare_concepts_err = CompareConcepts(akn);
+                        ERROR_CHECK(compare_concepts_err, ERROR_COMPARE_CONCEPTS);
                     }
 
             case MODE_DUMP :
@@ -340,7 +459,7 @@ int StartAkinator(struct Akinator *akn)
 
             case MODE_SAVE_EXIT : 
                     {
-                        int save_tree_err = TreeSave(akn->tree);
+                        int save_tree_err = TreeSerialize(akn->tree);
                         ERROR_CHECK(save_tree_err, ERROR_TREE_SAVE);
                         //falling further
                     }

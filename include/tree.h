@@ -36,12 +36,12 @@ typedef const char *tree_elem_t;
 static tree_elem_t POISON_TREE_VALUE = "POISON";
 #define TREE_SPECIFIER "%s"
 
-#define READABLE_SYMB "%[a-zA-z -]"
+#define READABLE_SYMB "%[a-zA-Z -]"
 
-static const char *const TREE_GRAPH_FILE = "tree_graph.gv";
-static const char *const TREE_DUMP_FILE  = "io/tree_dump.txt";
-static const char *const TREE_HTM_FILE   = "io/treegraphs.htm"; 
-static const char *const TREE_IO         = "io/tree.txt";
+static const char *const         TREE_GRAPH_PATH = "tree_graph.gv";
+static const char *const          TREE_DUMP_PATH = "io/tree_dump.txt";
+static const char *const           TREE_HTM_PATH = "io/tree_graphs.htm"; 
+static const char *const TREE_SERIALIZATION_PATH = "io/tree.txt";
 
 const size_t MAX_TREE_STR_SIZE = 101;
 const size_t MAX_COMMAND_SIZE = 101;
@@ -123,11 +123,11 @@ int SaveTreeGraphPng(void);
 int AddTreeGraphPng(int graph_counter);
 int CreateTreeNodes(const struct TreeNode *curr_node, FILE *graph_f);
 
-int TreeSave(const struct Tree *tree);
-int SaveNode(const struct TreeNode *curr_node, FILE *tree_f);
+int TreeSerialize(const struct Tree *tree);
+int SerializeNode(const struct TreeNode *curr_node, FILE *tree_f);
 
-struct Tree *ReadTree(const char *input_file_name);
-int ReadNode(struct Tree *new_tree, struct TreeNode *prev_node, char **buf);
+struct Tree *DeserializeTree(const char *input_file_name);
+int DeserializeNode(struct Tree *new_tree, struct TreeNode *prev_node, char **buf);
 int ReadValue(char *value, char **buf);
 
 

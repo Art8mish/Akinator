@@ -14,13 +14,13 @@
             do                                      \
             {                                       \
                 if (cond)                           \
-                    tree->error |= err_code;        \
+                    tree->error |= (err_code);      \
             } while(false) 
 
 #define SKIP_SPACE(buf)                                     \
             while(isspace((int)(*buf)) || (*buf) == '\0')   \
             {                                               \
-                buf++;                                      \
+                (buf)++;                                    \
                 if ((*buf) == EOF)                          \
                     return SUCCESS;                         \
             }   
@@ -158,20 +158,22 @@ int TreeCheckError(struct Tree *tree)
 {
     ERROR_CHECK(tree == NULL, ERROR_NULL_PTR);
 
+    //INCPECT_TREE(CONDITION, ERROR_CODE)
+
     return SUCCESS;
 }
 
 
-int TreeSave(const struct Tree *tree)
+int TreeSerialize(const struct Tree *tree)
 {
     ERROR_CHECK(tree == NULL, ERROR_NULL_PTR);
 
-    FILE *tree_f = fopen(TREE_IO, "w");
+    FILE *tree_f = fopen(TREE_SERIALIZATION_PATH, "w");
     ERROR_CHECK(tree_f == NULL, ERROR_OPENING_FILE);
 
     if (tree->root != NULL)
     {
-        int save_node_err = SaveNode(tree->root, tree_f);
+        int save_node_err = SerializeNode(tree->root, tree_f);
         FILE_ERROR_CHECK(save_node_err, ERROR_SAVE_NODE, tree_f);
     }
 
@@ -181,7 +183,7 @@ int TreeSave(const struct Tree *tree)
     return SUCCESS;
 }
 
-int SaveNode(const struct TreeNode *curr_node, FILE *tree_f)
+int SerializeNode(const struct TreeNode *curr_node, FILE *tree_f)
 {
     ERROR_CHECK(curr_node == NULL, ERROR_NULL_PTR);
     ERROR_CHECK(tree_f    == NULL, ERROR_NULL_PTR);
@@ -200,14 +202,14 @@ int SaveNode(const struct TreeNode *curr_node, FILE *tree_f)
     if (curr_node->left != NULL)
     {
         have_children = true;
-        int save_node_err = SaveNode(curr_node->left, tree_f);
+        int save_node_err = SerializeNode(curr_node->left, tree_f);
         ERROR_CHECK(save_node_err, ERROR_SAVE_NODE);
     }
 
     if (curr_node->right != NULL)
     {
         have_children = true;
-        int save_node_err = SaveNode(curr_node->right, tree_f);
+        int save_node_err = SerializeNode(curr_node->right, tree_f);
         ERROR_CHECK(save_node_err, ERROR_SAVE_NODE);
     }
 
@@ -222,7 +224,7 @@ int SaveNode(const struct TreeNode *curr_node, FILE *tree_f)
     return SUCCESS;
 }
 
-struct Tree *ReadTree(const char *input_file_name)
+struct Tree *DeserializeTree(const char *input_file_name)
 {
     ERROR_CHECK(input_file_name == NULL, NULL);
 
@@ -243,13 +245,13 @@ struct Tree *ReadTree(const char *input_file_name)
     int insert_err = TreeInsert(new_tree, NULL, TREE_INSERT_FIRST, value);
     ERROR_CHECK(insert_err, NULL);
 
-    int read_node_err = ReadNode(new_tree, new_tree->root, &buf);
+    int read_node_err = DeserializeNode(new_tree, new_tree->root, &buf);
     ERROR_CHECK(read_node_err, NULL);
 
     return new_tree;    
 }
 
-int ReadNode(struct Tree *new_tree, struct TreeNode *prev_node, char **buf)
+int DeserializeNode(struct Tree *new_tree, struct TreeNode *prev_node, char **buf)
 {
     ERROR_CHECK(new_tree  == NULL, ERROR_NULL_PTR);
     ERROR_CHECK(prev_node == NULL, ERROR_NULL_PTR);
@@ -273,7 +275,7 @@ int ReadNode(struct Tree *new_tree, struct TreeNode *prev_node, char **buf)
         int insert_err = TreeInsert(new_tree, prev_node, TREE_INSERT_LEFT, value);
         ERROR_CHECK(insert_err, ERROR_TREE_INSERT);
 
-        int read_node_err = ReadNode(new_tree, prev_node->left, buf);
+        int read_node_err = DeserializeNode(new_tree, prev_node->left, buf);
         ERROR_CHECK(read_node_err, ERROR_READ_NODE);
 
         SKIP_SPACE((*buf));
@@ -284,7 +286,7 @@ int ReadNode(struct Tree *new_tree, struct TreeNode *prev_node, char **buf)
             insert_err = TreeInsert(new_tree, prev_node, TREE_INSERT_RIGHT, value);
         ERROR_CHECK(insert_err, ERROR_TREE_INSERT);
 
-            read_node_err = ReadNode(new_tree, prev_node->right, buf);
+            read_node_err = DeserializeNode(new_tree, prev_node->right, buf);
         ERROR_CHECK(read_node_err, ERROR_READ_NODE);
     }
 

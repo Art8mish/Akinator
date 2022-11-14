@@ -2,9 +2,9 @@
 { "animal" 
 	{ "likes banana" 
 		{ "king of monkeys" 
-			{ "orangutan" }
-
 			{ "gorilla" }
+
+			{ "baboon" }
 		}
 
 		{ "has beak" 

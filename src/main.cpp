@@ -3,16 +3,10 @@
 
 int main(void)
 {
-   //SetConsoleCP(1251);
-   //SetConsoleOutputCP(1251);
-   //setlocale(LC_ALL, "Rus");
-   //setlocale (LC_ALL, "ru_RU.cp1251");
-   //system("chcp 1251");
-
    struct Akinator *akn = AkinatorCtor();
    ERROR_CHECK(akn == NULL, ERROR_AKINATOR_CTOR);
    
-   int akinator_err = StartAkinator(akn);
+   int akinator_err = RunAkinator(akn);
    ERROR_CHECK(akinator_err, ERROR_AKINATOR);
 
    return 0;
