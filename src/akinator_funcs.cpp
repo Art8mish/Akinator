@@ -176,7 +176,7 @@ int AddNewConcept(struct Akinator *akn, struct TreeNode *curr_node)
     ERROR_CHECK(akn->tree == NULL, ERROR_NULL_PTR);
     ERROR_CHECK(curr_node == NULL, ERROR_NULL_PTR);
 
-    printf("Please, tell me what you wished:\n");
+    printf("Please, tell me what you have wished:\n");
 
     char user_word[MAX_STR_SIZE] = { 0 };
     CHECK_INSERT(scanf(" " READABLE_SYMB, user_word), strlen(user_word) < MAX_STR_SIZE);
@@ -281,10 +281,10 @@ int FillRetList(struct List *list_ret, struct TreeNode *curr_node)
     int list_push_err = listPushBack(list_ret, curr_node, &list_node);
     ERROR_CHECK(list_push_err, ERROR_LIST_INSERT_AFTER);
 
-    if (curr_node->prev == NULL)
+    if (curr_node->parent == NULL)
         return SUCCESS;
 
-    int print_definition_err = FillRetList(list_ret, curr_node->prev);
+    int print_definition_err = FillRetList(list_ret, curr_node->parent);
     ERROR_CHECK(print_definition_err, ERROR_PRINT_DEFINITION);
 
     return SUCCESS;

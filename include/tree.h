@@ -36,7 +36,7 @@ typedef const char *tree_elem_t;
 static tree_elem_t POISON_TREE_VALUE = "POISON";
 #define TREE_SPECIFIER "%s"
 
-#define READABLE_SYMB "%[a-zA-Z -]"
+#define READABLE_SYMB "%[a-zA-Z1234567890 -]"
 
 static const char *const         TREE_GRAPH_PATH = "tree_graph.gv";
 static const char *const          TREE_DUMP_PATH = "io/tree_dump.txt";
@@ -92,7 +92,7 @@ struct TreeNode
     tree_elem_t value = POISON_TREE_VALUE;
     struct TreeNode *left  = NULL;
     struct TreeNode *right = NULL;
-    struct TreeNode *prev  = NULL;
+    struct TreeNode *parent  = NULL;
 };
 
 struct Tree

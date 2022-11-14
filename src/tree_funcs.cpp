@@ -69,7 +69,7 @@ int TreeNodeDtor(struct TreeNode *curr_node)
         ERROR_CHECK(node_dtor_err, ERROR_NODE_DTOR);
     }
 
-    curr_node->prev = NULL;
+    curr_node->parent = NULL;
 
     FREE_TREE_NODE_VALUE(curr_node);
     free(curr_node);
@@ -94,7 +94,7 @@ int TreeInsert(struct Tree *tree, struct TreeNode *prev_node,
     
     curr_node->right = NULL;
     curr_node->left  = NULL;
-    curr_node->prev  = prev_node;
+    curr_node->parent  = prev_node;
 
     if (prev_node == NULL)
         tree->root = curr_node;
@@ -188,7 +188,7 @@ int SerializeNode(const struct TreeNode *curr_node, FILE *tree_f)
     ERROR_CHECK(curr_node == NULL, ERROR_NULL_PTR);
     ERROR_CHECK(tree_f    == NULL, ERROR_NULL_PTR);
 
-    bool have_children = false;
+    bool child_ex = false;
     static unsigned int recur_count = 0;
     recur_count++;
 
@@ -201,19 +201,19 @@ int SerializeNode(const struct TreeNode *curr_node, FILE *tree_f)
 
     if (curr_node->left != NULL)
     {
-        have_children = true;
+        child_ex = true;
         int save_node_err = SerializeNode(curr_node->left, tree_f);
         ERROR_CHECK(save_node_err, ERROR_SAVE_NODE);
     }
 
     if (curr_node->right != NULL)
     {
-        have_children = true;
+        child_ex = true;
         int save_node_err = SerializeNode(curr_node->right, tree_f);
         ERROR_CHECK(save_node_err, ERROR_SAVE_NODE);
     }
 
-    if (have_children)
+    if (child_ex)
         for (unsigned int i = 1; i < recur_count; i++)
             fprintf(tree_f, "\t");
 

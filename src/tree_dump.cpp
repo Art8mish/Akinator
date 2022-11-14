@@ -88,7 +88,7 @@ int CreateTreeNodes(const struct TreeNode *curr_node, FILE *graph_f)
 
     fprintf(graph_f, "\t%d[style=\"filled\",fillcolor=\"%s\"shape=record,color=%s,"
                         "label=\"{{<f0> 0x%d |<f3>prev 0x%d}|" TREE_SPECIFIER "|{<f2>left_yes 0x%d | <f1>rght_no 0x%d}}\"]\n",
-                        (int)curr_node, fill_color, color, (int)curr_node, (int)curr_node->prev, 
+                        (int)curr_node, fill_color, color, (int)curr_node, (int)curr_node->parent, 
                         curr_node->value, (int)curr_node->left, (int)curr_node->right);
 
     if (curr_node->left  != NULL)

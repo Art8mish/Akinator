@@ -22,7 +22,7 @@ const size_t MAX_STR_SIZE = 101;
 const size_t MAX_CMD_SIZE = 4;
 
 #ifndef READABLE_SYMB
-#define READABLE_SYMB "%[a-zA-z -]"
+#define READABLE_SYMB "%[a-zA-Z1234567890 -]"
 #endif
 
 #include "error.h"

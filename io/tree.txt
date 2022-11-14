@@ -21,6 +21,10 @@
 			{ "sportsman" }
 		}
 
-		{ "Anton" }
+		{ "cyborg" 
+			{ "T-800" }
+
+			{ "Anton" }
+		}
 	}
 }
