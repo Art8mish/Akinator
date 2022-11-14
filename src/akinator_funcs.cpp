@@ -13,16 +13,13 @@
                 int ch = 0;                                                      \
                 while ((ch = getchar()) != '\n')                                 \
                     if (!isspace(ch))                                            \
-                    {                                                            \
                         correct_input = false;                                   \
-                        break;                                                   \
-                    }                                                            \
                 if (!correct_input)                                              \
-                    printf("I do not understand.\nEnter correct value..\n");     \
+                    printf("I do not understand.\nEnter correct value..\n");   \
             }                                                                    \
         } while(false)
 
-#define CTOR_LIST_RET(list_ret, desired_node)                                             \
+#define CTOR_LIST_RET(list_ret, desired_node)                                               \
             struct List *(list_ret) = (struct List *) calloc(1, sizeof(struct List));       \
             do                                                                              \
             {                                                                               \
@@ -48,8 +45,6 @@ struct Akinator *AkinatorCtor(void)
     akn->tree = DeserializeTree(TREE_SERIALIZATION_PATH);
     ERROR_CHECK(akn->tree == NULL, NULL);
 
-    TREEDUMP(akn->tree, "ctor dump");
-
     return akn;    
 }
 
@@ -70,14 +65,14 @@ int Greeting(int *mode)
 {
     ERROR_CHECK(mode == NULL, ERROR_NULL_PTR);
 
-    printf("This is akinator, I can guess your word.\n"
+    printf("\nThis is akinator, I can guess your word.\n"
             "Choose mode:\n"
-            "Enter 1 for Guessing;\n"
-            "Enter 2 for Giving definition;\n"
-            "Enter 3 for Comparison two objects;\n"
-            "Enter 4 for Creating TreeGraph;\n\n"
-            "Enter 5 to Exit with saving concepts;\n"
-            "Enter 6 to Exit without saving concepts;\n");
+            "Enter " COLOR_TEXT_GRN(1) " for Guessing;\n"
+            "Enter " COLOR_TEXT_GRN(2) " for Giving definition;\n"
+            "Enter " COLOR_TEXT_GRN(3) " for Comparison two objects;\n"
+            "Enter " COLOR_TEXT_GRN(4) " for Creating TreeGraph;\n\n"
+            "Enter " COLOR_TEXT_GRN(5) " to Exit with saving concepts;\n"
+            "Enter " COLOR_TEXT_GRN(6) " to Exit without saving concepts;\n");
 
     CHECK_INSERT(scanf("%d", mode), *mode >= 1 && *mode <= 6);
 
@@ -150,7 +145,6 @@ int MakeGuess(struct Akinator *akn, struct TreeNode *curr_node)
     if (strcmp(answer, "yes") == 0)
     {
         printf("I guessed right. I'm very usefull!\n\n");
-
         return SUCCESS;
     }
 
@@ -216,7 +210,6 @@ int MakeDefinition(struct Akinator *akn)
     if (desired_node == NULL)
     {
         printf("I don't know this concept...\n\n");
-
         return SUCCESS;
     }
 
@@ -303,6 +296,7 @@ int CompareConcepts(struct Akinator *akn)
 
     printf("Insert second concept: ");
     CHECK_INSERT(scanf(" " READABLE_SYMB, scnd_cncpt), (strlen(scnd_cncpt) < MAX_STR_SIZE));
+    printf("\n");
 
     struct TreeNode *frst_cncpt_node  = NULL;
     int definition_iter_err = FindDesiredNode(akn, akn->tree->root, &frst_cncpt_node, frst_cncpt);
@@ -324,6 +318,12 @@ int CompareConcepts(struct Akinator *akn)
         definition_iter_err = FindDesiredNode(akn, akn->tree->root, &scnd_cncpt_node, scnd_cncpt);
     ERROR_CHECK(definition_iter_err, ERROR_DEFINITION_ITER_ERROR);
 
+    if (scnd_cncpt_node == NULL || frst_cncpt_node == NULL)
+    {
+        printf("Incorrect concepts...\n\n");
+        return SUCCESS;
+    }
+
     int print_comparison_err = PrintComparison(akn, frst_cncpt_node, scnd_cncpt_node);
     ERROR_CHECK(print_comparison_err, ERROR_PRINT_COMPARISON);
 
@@ -341,32 +341,29 @@ int PrintComparison(struct Akinator *akn, struct TreeNode *frst_node,
     CTOR_LIST_RET(frst_list_ret, frst_node);
     CTOR_LIST_RET(scnd_list_ret, scnd_node);
 
-    struct TreeNode *curr_node = NULL;
+    struct TreeNode *dividing_node = NULL;
     do
     {
-        int list_pop_err = listPopBack(frst_list_ret, &curr_node);
+        int list_pop_err = listPopBack(frst_list_ret, &dividing_node);
         ERROR_CHECK(list_pop_err, ERROR_POP_BACK);
 
-            list_pop_err = listPopBack(scnd_list_ret, &curr_node);
+            list_pop_err = listPopBack(scnd_list_ret, &dividing_node);
         ERROR_CHECK(list_pop_err, ERROR_POP_BACK);
 
     } while(frst_list_ret->fict_node->prev->value == 
             scnd_list_ret->fict_node->prev->value);
 
-    struct TreeNode *dividing_node = curr_node;
-    printf("%s\n", curr_node->value);
     if (dividing_node != akn->tree->root)
     {
         printf("They both: ");
         int print_def_err = PrintDefinition(dividing_node);
         ERROR_CHECK(print_def_err, ERROR_PRINT_DEFINITION);
-        printf("but, ");
+        printf("\nbut, ");
     }
 
     else
         printf("They have nothing common\n");
 
-    
     struct Node *list_node = NULL;
     int list_push_err = listPushBack(frst_list_ret, dividing_node, &list_node);
     ERROR_CHECK(list_push_err, ERROR_LIST_INSERT_AFTER);
@@ -375,7 +372,7 @@ int PrintComparison(struct Akinator *akn, struct TreeNode *frst_node,
     ERROR_CHECK(list_push_err, ERROR_LIST_INSERT_AFTER);
     
 
-    printf("\n" TREE_SPECIFIER ": ", frst_node->value);
+    printf(TREE_SPECIFIER ": ", frst_node->value);
     int print_list_ret_err = PrintListRet(frst_list_ret, frst_node);
     ERROR_CHECK(print_list_ret_err, ERROR_PRINT_LIST_RET);
 
@@ -397,7 +394,6 @@ int PrintListRet(struct List *list_ret, struct TreeNode *desired_node)
 
     while (list_ret->fict_node->prev->value != desired_node)
     {
-        int counter = 0;
         struct TreeNode *curr_node = NULL;
         int list_pop_err = listPopBack(list_ret, &curr_node);
         ERROR_CHECK(list_pop_err, ERROR_POP_BACK);
@@ -409,10 +405,6 @@ int PrintListRet(struct List *list_ret, struct TreeNode *desired_node)
 
         if (list_ret->fict_node->prev->value != desired_node)
             printf(", ");
-
-        counter++;
-        if (counter == 20)
-            return ERROR_AKINATOR;
     } 
 
     return SUCCESS;

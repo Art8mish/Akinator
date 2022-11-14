@@ -16,7 +16,7 @@
 
 #include "common.h"
 
-#define COLOR_TEXT(text) "\e[31m" #text "\e[0m"
+#define COLOR_TEXT_GRN(text) "\e[32m"#text"\e[0m"
 
 const size_t MAX_STR_SIZE = 101;
 const size_t MAX_CMD_SIZE = 4;

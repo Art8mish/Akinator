@@ -10,21 +10,25 @@
 		{ "has beak" 
 			{ "duck" }
 
-			{ "poltorashka" }
+			{ "queen of animals" 
+				{ "poltorashka" }
+
+				{ "lion" }
+			}
 		}
 	}
 
 	{ "human" 
-		{ "smokes" 
-			{ "narkoman" }
+		{ "pop-star" 
+			{ "Michael Jackson" }
 
-			{ "sportsman" }
+			{ "Anton" }
 		}
 
 		{ "cyborg" 
 			{ "T-800" }
 
-			{ "Anton" }
+			{ "Buratino" }
 		}
 	}
 }

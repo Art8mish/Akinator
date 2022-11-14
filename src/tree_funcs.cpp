@@ -70,7 +70,6 @@ int TreeNodeDtor(struct TreeNode *curr_node)
     }
 
     curr_node->parent = NULL;
-
     FREE_TREE_NODE_VALUE(curr_node);
     free(curr_node);
 
@@ -96,17 +95,21 @@ int TreeInsert(struct Tree *tree, struct TreeNode *prev_node,
     curr_node->left  = NULL;
     curr_node->parent  = prev_node;
 
-    if (prev_node == NULL)
-        tree->root = curr_node;
-    
-
-    else
+    switch (insert_path)
     {
-        if (insert_path == TREE_INSERT_LEFT)
-            prev_node->left  = curr_node;
+        case TREE_INSERT_FIRST : tree->root = curr_node;
+                                 break;
 
-        else if (insert_path == TREE_INSERT_RIGHT)
-            prev_node->right = curr_node;
+        case TREE_INSERT_LEFT  : ERROR_CHECK(prev_node == NULL, ERROR_NULL_PTR);
+                                 prev_node->left  = curr_node;
+                                 break;
+
+        case TREE_INSERT_RIGHT : ERROR_CHECK(prev_node == NULL, ERROR_NULL_PTR);
+                                 prev_node->right = curr_node;
+                                 break;
+        
+        default                : return ERROR_WRONG_TREE_INSERT_PATH;
+                                 break;
     }
 
     tree->size += 1;
@@ -162,7 +165,6 @@ int TreeCheckError(struct Tree *tree)
 
     return SUCCESS;
 }
-
 
 int TreeSerialize(const struct Tree *tree)
 {
@@ -230,8 +232,6 @@ struct Tree *DeserializeTree(const char *input_file_name)
 
     struct Tree *new_tree = TreeCtor();
     ERROR_CHECK(new_tree == NULL, NULL);
-
-    TREEDUMP(new_tree, "tree ctor");
 
     struct WorkingField *onegin_context = CreateWorkingField(input_file_name);
     ERROR_CHECK(onegin_context == NULL, NULL);
