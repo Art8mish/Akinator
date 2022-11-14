@@ -21,6 +21,6 @@
 			{ "sportsman" }
 		}
 
-		{ "pidaras" }
+		{ "Anton" }
 	}
 }

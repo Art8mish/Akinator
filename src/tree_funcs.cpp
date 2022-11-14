@@ -1,10 +1,10 @@
 
-#include "../include/akinator.h"
+#include "../include/tree.h"
 
 #define VERIFICATION(tree)                                              \
             do                                                          \
             {                                                           \
-                int verification_err = treeVerification(tree);          \
+                int verification_err = TreeVerification(tree);          \
                 ERROR_CHECK(verification_err, ERROR_TREE_VERIFICATION); \
                 if (tree->error != 0)                                   \
                     return ERROR_TREE;                                  \
@@ -26,21 +26,18 @@
             }   
                         
 
-struct Tree *treeCtor(void)
+struct Tree *TreeCtor(void)
 {
     struct Tree *tree = (struct Tree *) calloc(1, sizeof(struct Tree));
+    ERROR_CHECK(tree == NULL, NULL);
 
     tree->root = NULL;
     tree->size = 0;
-
-    tree->lst_ret = (struct List *) calloc(1, sizeof(struct List *));
-    int lst_err = listCtor(tree->lst_ret);
-    ERROR_CHECK(lst_err, NULL);
     
     return tree;
 }
 
-int treeDtor(struct Tree *tree)
+int TreeDtor(struct Tree *tree)
 {
     ERROR_CHECK(tree == NULL, ERROR_NULL_PTR);
 
@@ -48,31 +45,27 @@ int treeDtor(struct Tree *tree)
 
     tree->size = 0;
 
-    int lst_err = listDtor(tree->lst_ret);
-    ERROR_CHECK(lst_err, ERROR_LIST_DTOR);
-    free(tree->lst_ret);
-
-    int node_dtor_err = treeNodeDtor(tree->root);
+    int node_dtor_err = TreeNodeDtor(tree->root);
     ERROR_CHECK(node_dtor_err, ERROR_NODE_DTOR);
 
-    tree->error |= CODE_DEAD_TREE;
+    free(tree);
 
     return SUCCESS;
 }
 
-int treeNodeDtor(struct TreeNode *curr_node)
+int TreeNodeDtor(struct TreeNode *curr_node)
 {
     ERROR_CHECK(curr_node == NULL, ERROR_NULL_PTR);
 
-    if (curr_node->left_yes != NULL)
+    if (curr_node->left != NULL)
     {
-        int node_dtor_err = treeNodeDtor(curr_node->left_yes);
+        int node_dtor_err = TreeNodeDtor(curr_node->left);
         ERROR_CHECK(node_dtor_err, ERROR_NODE_DTOR);
     }
 
-    if (curr_node->rght_no != NULL)
+    if (curr_node->right != NULL)
     {
-        int node_dtor_err = treeNodeDtor(curr_node->rght_no);
+        int node_dtor_err = TreeNodeDtor(curr_node->right);
         ERROR_CHECK(node_dtor_err, ERROR_NODE_DTOR);
     }
 
@@ -84,11 +77,13 @@ int treeNodeDtor(struct TreeNode *curr_node)
     return SUCCESS;
 }
 
-int treeInsert(struct Tree *tree, struct TreeNode *prev_node,
-               struct TreeNode **node_ptr, tree_elem_t arg)
+int TreeInsert(struct Tree *tree, struct TreeNode *prev_node,
+               int insert_path, tree_elem_t arg)
 {
-    ERROR_CHECK(tree      == NULL, ERROR_NULL_PTR);
-    ERROR_CHECK(node_ptr  == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(tree == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(insert_path != TREE_INSERT_LEFT  &&
+                insert_path != TREE_INSERT_RIGHT &&
+                insert_path != TREE_INSERT_FIRST, ERROR_WRONG_TREE_INSERT_PATH);
 
     VERIFICATION(tree);
 
@@ -97,11 +92,22 @@ int treeInsert(struct Tree *tree, struct TreeNode *prev_node,
 
     WRITE_TREE_NODE_VALUE(curr_node, arg);
     
-    curr_node->rght_no   = NULL;
-    curr_node->left_yes  = NULL;
-    curr_node->prev      = prev_node;
+    curr_node->right = NULL;
+    curr_node->left  = NULL;
+    curr_node->prev  = prev_node;
 
-    *node_ptr = curr_node;
+    if (prev_node == NULL)
+        tree->root = curr_node;
+    
+
+    else
+    {
+        if (insert_path == TREE_INSERT_LEFT)
+            prev_node->left  = curr_node;
+
+        else if (insert_path == TREE_INSERT_RIGHT)
+            prev_node->right = curr_node;
+    }
 
     tree->size += 1;
 
@@ -110,7 +116,7 @@ int treeInsert(struct Tree *tree, struct TreeNode *prev_node,
     return SUCCESS;
 }
 
-int treeRemove(struct Tree *tree, struct TreeNode **node_ptr,
+int TreeRemove(struct Tree *tree, struct TreeNode **node_ptr,
                tree_elem_t *arg)
 {
     ERROR_CHECK(tree     == NULL, ERROR_NULL_PTR);
@@ -119,11 +125,11 @@ int treeRemove(struct Tree *tree, struct TreeNode **node_ptr,
 
     VERIFICATION(tree);
 
-    ERROR_CHECK(tree->size == 0, ERROR_INCORRECT_OPERATION);
+    ERROR_CHECK(tree->size == 0, ERROR_TREE_INCORRECT_OPERATION);
 
     *arg = (*node_ptr)->value;
 
-    int node_dtor_err = treeNodeDtor(*node_ptr);
+    int node_dtor_err = TreeNodeDtor(*node_ptr);
     ERROR_CHECK(node_dtor_err, ERROR_NODE_DTOR);
 
     *node_ptr = NULL;
@@ -134,12 +140,12 @@ int treeRemove(struct Tree *tree, struct TreeNode **node_ptr,
     return SUCCESS;
 }
 
-int treeVerification(struct Tree *tree)
+int TreeVerification(struct Tree *tree)
 {
     ERROR_CHECK(tree == NULL, ERROR_NULL_PTR);
 
-    int tree_check_err = treeCheckError(tree);
-    ERROR_CHECK(tree_check_err, ERROR_LIST_CHECK_ERROR);
+    int tree_check_err = TreeCheckError(tree);
+    ERROR_CHECK(tree_check_err, ERROR_TREE_CHECK_ERROR);
     
     if (tree->error != 0)
         TREEDUMP(tree, "ERROR IN VERIFICATION");
@@ -147,17 +153,16 @@ int treeVerification(struct Tree *tree)
     return SUCCESS;
 }
 
-int treeCheckError(struct Tree *tree)
+
+int TreeCheckError(struct Tree *tree)
 {
     ERROR_CHECK(tree == NULL, ERROR_NULL_PTR);
-
-    INSPECT_TREE(tree == NULL, ERROR_CODE_NULL_TREE);
 
     return SUCCESS;
 }
 
 
-int treeSave(const struct Tree *tree)
+int TreeSave(const struct Tree *tree)
 {
     ERROR_CHECK(tree == NULL, ERROR_NULL_PTR);
 
@@ -192,17 +197,17 @@ int SaveNode(const struct TreeNode *curr_node, FILE *tree_f)
     if (curr_node != NULL)
         fprintf(tree_f, "{ \"" TREE_SPECIFIER "\" ", curr_node->value);
 
-    if (curr_node->left_yes != NULL)
+    if (curr_node->left != NULL)
     {
         have_children = true;
-        int save_node_err = SaveNode(curr_node->left_yes, tree_f);
+        int save_node_err = SaveNode(curr_node->left, tree_f);
         ERROR_CHECK(save_node_err, ERROR_SAVE_NODE);
     }
 
-    if (curr_node->rght_no != NULL)
+    if (curr_node->right != NULL)
     {
         have_children = true;
-        int save_node_err = SaveNode(curr_node->rght_no, tree_f);
+        int save_node_err = SaveNode(curr_node->right, tree_f);
         ERROR_CHECK(save_node_err, ERROR_SAVE_NODE);
     }
 
@@ -221,38 +226,35 @@ struct Tree *ReadTree(const char *input_file_name)
 {
     ERROR_CHECK(input_file_name == NULL, NULL);
 
-    struct Tree *new_tree = treeCtor();
+    struct Tree *new_tree = TreeCtor();
     ERROR_CHECK(new_tree == NULL, NULL);
+
+    TREEDUMP(new_tree, "tree ctor");
 
     struct WorkingField *onegin_context = CreateWorkingField(input_file_name);
     ERROR_CHECK(onegin_context == NULL, NULL);
 
     char *buf = onegin_context->chars_buffer;
 
-    int read_node_err = ReadNode(new_tree, NULL, &new_tree->root, &buf);
+    char value[MAX_TREE_STR_SIZE] = { 0 };
+    int read_val_err = ReadValue(value, &buf);
+    ERROR_CHECK(read_val_err, NULL);
+
+    int insert_err = TreeInsert(new_tree, NULL, TREE_INSERT_FIRST, value);
+    ERROR_CHECK(insert_err, NULL);
+
+    int read_node_err = ReadNode(new_tree, new_tree->root, &buf);
     ERROR_CHECK(read_node_err, NULL);
 
     return new_tree;    
 }
 
-int ReadNode(struct Tree *new_tree, struct TreeNode *prev_node,
-             struct TreeNode **curr_node, char **buf)
+int ReadNode(struct Tree *new_tree, struct TreeNode *prev_node, char **buf)
 {
-    ERROR_CHECK(new_tree == NULL, ERROR_NULL_PTR);
-    ERROR_CHECK(curr_node == NULL, ERROR_NULL_PTR);
-    ERROR_CHECK(buf == NULL, ERROR_NULL_PTR);
-
-    char value[MAX_STR_SIZE] = { 0 };
-    int symb_count = 0;
-
-    SKIP_SPACE((*buf));
-
-    (*buf)++;
-    sscanf((*buf), " \"" READABLE_SYMB "\"%n", value,  &symb_count);
-    (*buf) += symb_count;
-
-    int insert_err = treeInsert(new_tree, prev_node, curr_node, value);
-    ERROR_CHECK(insert_err, ERROR_TREE_INSERT);
+    ERROR_CHECK(new_tree  == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(prev_node == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(buf       == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(*buf      == NULL, ERROR_NULL_PTR);
 
     SKIP_SPACE((*buf));
 
@@ -264,12 +266,25 @@ int ReadNode(struct Tree *new_tree, struct TreeNode *prev_node,
 
     if ((**buf) == '{')
     {
-        int read_node_err = ReadNode(new_tree, *curr_node, &(*curr_node)->left_yes, buf);
+        char value[MAX_TREE_STR_SIZE] = { 0 };
+        int read_val_err = ReadValue(value, buf);
+        ERROR_CHECK(read_val_err, ERROR_READ_VALUE);
+
+        int insert_err = TreeInsert(new_tree, prev_node, TREE_INSERT_LEFT, value);
+        ERROR_CHECK(insert_err, ERROR_TREE_INSERT);
+
+        int read_node_err = ReadNode(new_tree, prev_node->left, buf);
         ERROR_CHECK(read_node_err, ERROR_READ_NODE);
 
         SKIP_SPACE((*buf));
 
-        read_node_err = ReadNode(new_tree, *curr_node, &(*curr_node)->rght_no, buf);
+            read_val_err = ReadValue(value, buf);
+        ERROR_CHECK(read_val_err, ERROR_READ_VALUE);
+
+            insert_err = TreeInsert(new_tree, prev_node, TREE_INSERT_RIGHT, value);
+        ERROR_CHECK(insert_err, ERROR_TREE_INSERT);
+
+            read_node_err = ReadNode(new_tree, prev_node->right, buf);
         ERROR_CHECK(read_node_err, ERROR_READ_NODE);
     }
 
@@ -279,6 +294,21 @@ int ReadNode(struct Tree *new_tree, struct TreeNode *prev_node,
         return ERROR_SYNTAX;
 
     (*buf)++;
+
+    return SUCCESS;
+}
+
+int ReadValue(char *value, char **buf)
+{
+    ERROR_CHECK( buf  == NULL, ERROR_NULL_PTR);
+    ERROR_CHECK(*buf  == NULL, ERROR_NULL_PTR);
+
+    int symb_count = 0;
+
+    SKIP_SPACE((*buf));
+    (*buf)++;
+    sscanf((*buf), " \"" READABLE_SYMB "\"%n", value,  &symb_count);
+    (*buf) += symb_count;
 
     return SUCCESS;
 }

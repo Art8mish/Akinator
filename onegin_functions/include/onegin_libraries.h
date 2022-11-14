@@ -12,6 +12,10 @@
 
 #define SOFT_ASSERT_MODE
 
+#ifdef SOFT_ASSERT
+#undef SOFT_ASSERT
+#endif
+
 #ifdef SOFT_ASSERT_MODE
 
 #define SOFT_ASSERT(condition)                                            \

@@ -1,4 +1,4 @@
-#include "../include/akinator.h"
+#include "../include/tree.h"
 
 #define PRINT_ERROR(err)                            \
             do                                      \
@@ -7,43 +7,48 @@
                     fprintf(dump_f, "%s\n", #err);  \
             } while(false)
 
-int treeDump(const struct Tree *tree, const char *comment, 
+int TreeDump(const struct Tree *tree, const char *comment, bool debug,
              const char *file_name, int line_num, const char *func_name)
 {
     ERROR_CHECK(tree == NULL, ERROR_NULL_PTR);
 
-    ERROR_CHECK(file_name == NULL, ERROR_NULL_PTR);
-    ERROR_CHECK(func_name == NULL, ERROR_NULL_PTR);
-
     FILE *dump_f = fopen(TREE_HTM_FILE, "a");
     ERROR_CHECK(dump_f == NULL, ERROR_OPENING_FILE);
 
-    fprintf(dump_f, "<b><h2>%s</h2></b>\n", comment);
-    fprintf(dump_f, "\nTree DUMP at %s(line: %d) at %s\n", file_name, line_num, func_name);
-    fprintf(dump_f, "Tree[%p]\n", tree);
-    fprintf(dump_f, "{\n");
-    fprintf(dump_f, "\tsize = %d\n", tree->size);
-
-    fprintf(dump_f, "\troot = %d\n", (int)tree->root);
-
-    fprintf(dump_f, "}\n\n");
-
-    if (tree->error != 0)
+    if (debug)
     {
-        fprintf(dump_f, "ERROR in Tree (%x):\n", tree->error);
-        PRINT_ERROR(ERROR_CODE_NULL_TREE);
-        PRINT_ERROR(CODE_DEAD_TREE);
-    }
+        if (comment != NULL)
+            fprintf(dump_f, "<b><h2>%s</h2></b>\n", comment);
 
-    int fclose_err = fclose(dump_f);
-    ERROR_CHECK(fclose_err, ERROR_CLOSING_FILE);
+        if (file_name != NULL)
+            fprintf(dump_f, "\nTree DUMP at %s ", file_name, line_num, func_name);
+        
+        if (line_num != 0)
+            fprintf(dump_f, "(line: %d) ", line_num);
+
+        if (func_name != NULL)
+            fprintf(dump_f, "at %s\n", func_name);
+        
+        fprintf(dump_f, "Tree[%p]\n", tree);
+        fprintf(dump_f, "{\n");
+        fprintf(dump_f, "\tsize = %d\n", tree->size);
+
+        fprintf(dump_f, "\troot = %d\n", (int)tree->root);
+
+        fprintf(dump_f, "}\n\n");
+    
+
+        if (tree->error != 0)
+            fprintf(dump_f, "ERROR in Tree (%x):\n", tree->error);
+    }
 
     int create_graph_err = CreateTreeGraph(tree);
     ERROR_CHECK(create_graph_err, ERROR_CREATE_GRAPH);
 
     fprintf(dump_f, "<hr>\n");
 
-    fprintf(dump_f, "\nEnd of DUMP...\n\n");
+    int fclose_err = fclose(dump_f);
+    ERROR_CHECK(fclose_err, ERROR_CLOSING_FILE);
 
     return SUCCESS;
 }
@@ -83,23 +88,26 @@ int CreateTreeNodes(const struct TreeNode *curr_node, FILE *graph_f)
 
     fprintf(graph_f, "\t%d[style=\"filled\",fillcolor=\"%s\"shape=record,color=%s,"
                         "label=\"{{<f0> 0x%d |<f3>prev 0x%d}|" TREE_SPECIFIER "|{<f2>left_yes 0x%d | <f1>rght_no 0x%d}}\"]\n",
-                        (int)curr_node, fill_color, color, (int)curr_node, (int)curr_node->prev, curr_node->value, (int)curr_node->left_yes, (int)curr_node->rght_no);
+                        (int)curr_node, fill_color, color, (int)curr_node, (int)curr_node->prev, 
+                        curr_node->value, (int)curr_node->left, (int)curr_node->right);
 
-    if (curr_node->left_yes != NULL)
-        fprintf(graph_f, "\t%d:<f2>:s->%d:<f0>:n[weight = 1, constraint=true, style=\"dashed\", label=\"yes\"]\n", (int)curr_node, (int)curr_node->left_yes);
+    if (curr_node->left  != NULL)
+        fprintf(graph_f, "\t%d:<f2>:s->%d:<f0>:n[weight = 1, constraint=true, style=\"dashed\", label=\"yes\"]\n", 
+                         (int)curr_node, (int)curr_node->left);
 
-    if (curr_node->rght_no  != NULL)
-        fprintf(graph_f, "\t%d:<f1>:s->%d:<f0>:n[weight = 1, constraint=true, style=\"dashed\", label=\"no\"]\n", (int)curr_node, (int)curr_node->rght_no);
+    if (curr_node->right != NULL)
+        fprintf(graph_f, "\t%d:<f1>:s->%d:<f0>:n[weight = 1, constraint=true, style=\"dashed\", label=\"no\"]\n", 
+                         (int)curr_node, (int)curr_node->right);
 
-    if (curr_node->rght_no != NULL)
+    if (curr_node->right != NULL)
     {
-        int create_nodes_err = CreateTreeNodes(curr_node->rght_no, graph_f);
+        int create_nodes_err = CreateTreeNodes(curr_node->right, graph_f);
         FILE_ERROR_CHECK(create_nodes_err, ERROR_CREATE_NODES, graph_f);
     }
 
-    if (curr_node->left_yes != NULL)
+    if (curr_node->left  != NULL)
     {
-        int create_nodes_err = CreateTreeNodes(curr_node->left_yes, graph_f);
+        int create_nodes_err = CreateTreeNodes(curr_node->left, graph_f);
         FILE_ERROR_CHECK(create_nodes_err, ERROR_CREATE_NODES, graph_f);
     }
 
@@ -110,7 +118,7 @@ int SaveTreeGraphPng(void)
 {
     static int graph_counter = 1;
 
-    char command[100] = "dot tree_graph.gv -Tpng -o images/tree_graph";
+    char command[MAX_COMMAND_SIZE] = "dot tree_graph.gv -Tpng -o images/tree_graph";
     char com_part[] = ".png";
 
     sprintf(command, "%s%d%s",command, graph_counter, com_part);
@@ -130,7 +138,7 @@ int AddTreeGraphPng(int graph_counter)
     FILE *htm_f = fopen(TREE_HTM_FILE, "a");
     ERROR_CHECK(htm_f == NULL, ERROR_OPENING_FILE);
     
-    fprintf(htm_f, "<img width=400 src=\"../images/tree_graph%d.png\"><br><hr>\n", graph_counter);
+    fprintf(htm_f, "<img width=400 src=\"../images/tree_graph%d.png\"><br>\n", graph_counter);
     
     int fclose_err = fclose(htm_f);
     ERROR_CHECK(fclose_err, ERROR_CLOSING_FILE);
