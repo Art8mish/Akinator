@@ -371,7 +371,6 @@ int PrintComparison(struct Akinator *akn, struct TreeNode *frst_node,
     list_push_err = listPushBack(scnd_list_ret, dividing_node, &list_node);
     ERROR_CHECK(list_push_err, ERROR_LIST_INSERT_AFTER);
     
-
     printf(TREE_SPECIFIER ": ", frst_node->value);
     int print_list_ret_err = PrintListRet(frst_list_ret, frst_node);
     ERROR_CHECK(print_list_ret_err, ERROR_PRINT_LIST_RET);

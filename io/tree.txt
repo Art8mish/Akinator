@@ -2,7 +2,11 @@
 { "animal" 
 	{ "likes banana" 
 		{ "king of monkeys" 
-			{ "gorilla" }
+			{ "does labs" 
+				{ "Ars" }
+
+				{ "gorilla" }
+			}
 
 			{ "baboon" }
 		}
